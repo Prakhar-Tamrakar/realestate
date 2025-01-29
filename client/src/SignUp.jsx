@@ -22,7 +22,7 @@ export default function SignUp() {
     e.preventDefault();
     try {
       setIsLoading(true);
-      setError(false);
+
       const res = await fetch("/api/auth/signup", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -93,6 +93,7 @@ export default function SignUp() {
           <span className="text-blue-500">Sign in</span>
         </Link>
       </div>
+      {error && <p className="text-red-500">Error signing up</p>}
     </div>
   );
 }
