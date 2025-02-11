@@ -1,9 +1,13 @@
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { useDispatch } from "react-redux";
+import {
+  signInStart,
+  signInSuccess,
+  signInFailure,
+} from "./redux/user/userSlice";
 
 export default function SignIn() {
-
-
   const [formData, setFormData] = useState({
     email: "",
     password: "",
@@ -12,6 +16,7 @@ export default function SignIn() {
   const [isLoading, setIsLoading] = useState(false);
 
   const navigate = useNavigate();
+  const dispatch = useDispatch(); // ✅ Fix: Initialize dispatch
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.id]: e.target.value });
@@ -20,31 +25,25 @@ export default function SignIn() {
   const handleOnSubmit = async (e) => {
     e.preventDefault();
     try {
-      // dispatch(signInStart());
-      setIsLoading(true);
+      dispatch(signInStart());
       setError(false);
-      const res = await fetch('/api/auth/signin', {
-        method: 'POST',
+      const res = await fetch("/api/auth/signin", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify(formData),
       });
       const data = await res.json();
       console.log(data);
       if (data.success === false) {
-        // dispatch(signInFailure(data.message));
-      setError(true);
+        dispatch(signInFailure(data.message));
         return;
       }
-      // dispatch(signInSuccess(data));
-      setIsLoading(true);
-      navigate('/');
+      dispatch(signInSuccess(data));
+      navigate("/");
     } catch (error) {
-      // dispatch(signInFailure(error.message));
-      console.error(error);
-      setError(true);
-      setIsLoading(false);
+      dispatch(signInFailure(error.message));
     }
   };
 
@@ -68,13 +67,15 @@ export default function SignIn() {
           className="bg-slate-100 p-3 rounded-lg"
           onChange={handleChange}
         />
-        <button disabled = {isLoading} 
-        className="bg-slate-700 text-white p-3 rounded-lg uppercase hover:opacity-95 disabled:opacity-80">
-          {isLoading ? "Loading" : "Sign in" }
+        <button
+          disabled={isLoading}
+          className="bg-slate-700 text-white p-3 rounded-lg uppercase hover:opacity-95 disabled:opacity-80"
+        >
+          {isLoading ? "Loading" : "Sign in"}
         </button>
       </form>
       <div className="flex gap-2 mt-5">
-        <p> dont Have an account?</p>
+        <p>Don't have an account?</p>
         <Link to="/signup">
           <span className="text-blue-500">Sign up</span>
         </Link>
