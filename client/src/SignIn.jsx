@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import {
   signInStart,
   signInSuccess,
@@ -13,8 +13,10 @@ export default function SignIn() {
     email: "",
     password: "",
   });
-  const [error, setError] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
+  // const [error, setError] = useState(null);
+  // const [isLoading, setIsLoading] = useState(false);
+  const { isLoading, error } = useSelector((state) => state.user);
+  
 
   const navigate = useNavigate();
   const dispatch = useDispatch(); // ✅ Fix: Initialize dispatch
@@ -24,29 +26,29 @@ export default function SignIn() {
   };
 
   const handleOnSubmit = async (e) => {
-    e.preventDefault();
-    try {
-      dispatch(signInStart());
-      setError(false);
-      const res = await fetch("/api/auth/signin", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(formData),
-      });
-      const data = await res.json();
-      console.log(data);
-      if (data.success === false) {
-        dispatch(signInFailure(data.message));
-        return;
-      }
-      dispatch(signInSuccess(data));
-      navigate("/");
-    } catch (error) {
-      dispatch(signInFailure(error.message));
+  e.preventDefault();
+  try {
+    dispatch(signInStart());
+    const res = await fetch("/api/auth/signin", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(formData),
+    });
+    const data = await res.json();
+    if (data.success === false) {
+      dispatch(signInFailure(data.message));
+      return;
     }
-  };
+    dispatch(signInSuccess(data));
+    navigate("/");
+  } catch (error) {
+    dispatch(signInFailure(error.message));
+    setError("Something went wrong. Please try again."); // fallback error
+  }
+};
+
 
   return (
     <div className="p-3 max-w-lg mx-auto">
@@ -83,7 +85,7 @@ export default function SignIn() {
           <span className="text-blue-500">Sign up</span>
         </Link>
       </div>
-      {error && <p className="text-red-500">Invalid email or password</p>}
+      {error && <p className="text-red-500">{error}</p>}
     </div>
   );
 }
