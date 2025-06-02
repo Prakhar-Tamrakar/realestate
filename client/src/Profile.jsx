@@ -78,7 +78,7 @@ export default function Profile() {
 
         const uploadResponse = await upload({
           file: selectedFile,
-          fileName: selectedFile.name,
+          fileName: new Date().getTime() + selectedFile.name,
           publicKey,
           token,
           expire,
@@ -86,8 +86,12 @@ export default function Profile() {
         });
 
         imageUrl = uploadResponse.url;
+        setFormData((prev) => ({
+          ...prev,
+          avatar: imageUrl,
+        }));
         console.log("Image uploaded successfully:", imageUrl);
-        // toast.success("Image uploaded successfully!");
+ 
       } catch (error) {
         if (error instanceof ImageKitAbortError) {
           alert("Upload aborted");
