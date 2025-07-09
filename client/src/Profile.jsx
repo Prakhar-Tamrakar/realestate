@@ -40,7 +40,11 @@ import {
   updateUserStart,
   updateUserSuccess,
   updateUserFailure,
+  deleteUserSuccess,
+  deleteUserFailure,
+  deleteUserStart,
 } from "./redux/user/userSlice";
+import { deleteUser } from "../../api/controllers/user.controller";
 
 export default function Profile() {
   const { currentUser } = useSelector((state) => state.user);
@@ -151,6 +155,23 @@ export default function Profile() {
       alert("Something went wrong while updating profile.");
     }
   };
+  const handleDeleteUser = async () => {
+    try {
+      dispatch(deleteUserStart());
+      const res = await fetch(`/api/user/delete/${currentUser._id}` , {method: "DELETE"});
+      const data = await res.json();
+      if(data.success==false)
+      {
+        dispatch(deleteUserFailure(data.message));
+        // alert(data.message);
+        return;
+      }
+      dispatch(deleteUserSuccess(data));
+      
+    } catch (error) {
+      dispatch(deleteUserFailure(error.message));
+    }
+  }
 
   return (
     <div className="p-3 max-w-lg mx-auto">
@@ -213,7 +234,7 @@ export default function Profile() {
       </form>
 
       <div className="flex justify-between mt-3">
-        <span className="text-red-700 cursor-pointer">Delete Account</span>
+        <span onClick={()=>handleDeleteUser()} className="text-red-700 cursor-pointer">Delete Account</span>
         <span className="text-red-700 cursor-pointer">Sign Out</span>
       </div>
       {/* <p className="text-red-700">{error ? error : " "}</p> */}
