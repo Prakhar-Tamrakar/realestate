@@ -55,6 +55,7 @@ export default function Profile() {
     email: currentUser.email || "",
     password: "",
   });
+  const [updateSuccess , setUpdateSuccess] = useState(false);
 
   const handleChange = (e) => {
     setFormData((prev) => ({
@@ -143,7 +144,7 @@ export default function Profile() {
           avatar: imageUrl,
         })
       );
-      alert("Profile updated successfully!");
+      setUpdateSuccess(true);
     } catch (error) {
       console.error("Update error:", error);
       dispatch(updateUserFailure(error.message));
@@ -215,6 +216,8 @@ export default function Profile() {
         <span className="text-red-700 cursor-pointer">Delete Account</span>
         <span className="text-red-700 cursor-pointer">Sign Out</span>
       </div>
+      {/* <p className="text-red-700">{error ? error : " "}</p> */}
+      <p className="text-green-700">{updateSuccess ? "User Updated Successfully" : " "}</p>
     </div>
   );
 }
