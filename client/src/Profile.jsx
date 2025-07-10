@@ -62,7 +62,7 @@ export default function Profile() {
     email: currentUser.email || "",
     password: "",
   });
-  const [updateSuccess , setUpdateSuccess] = useState(false);
+  const [updateSuccess, setUpdateSuccess] = useState(false);
 
   const handleChange = (e) => {
     setFormData((prev) => ({
@@ -103,9 +103,12 @@ export default function Profile() {
       } catch (error) {
         let message = "Image upload failed";
         if (error instanceof ImageKitAbortError) message = "Upload aborted";
-        else if (error instanceof ImageKitInvalidRequestError) message = "Invalid upload request";
-        else if (error instanceof ImageKitUploadNetworkError) message = "Network error during upload";
-        else if (error instanceof ImageKitServerError) message = "ImageKit server error";
+        else if (error instanceof ImageKitInvalidRequestError)
+          message = "Invalid upload request";
+        else if (error instanceof ImageKitUploadNetworkError)
+          message = "Network error during upload";
+        else if (error instanceof ImageKitServerError)
+          message = "ImageKit server error";
 
         alert(message);
         dispatch(updateUserFailure(message));
@@ -161,36 +164,35 @@ export default function Profile() {
   const handleDeleteUser = async () => {
     try {
       dispatch(deleteUserStart());
-      const res = await fetch(`/api/user/delete/${currentUser._id}` , {method: "DELETE"});
+      const res = await fetch(`/api/user/delete/${currentUser._id}`, {
+        method: "DELETE",
+      });
       const data = await res.json();
-      if(data.success==false)
-      {
+      if (data.success == false) {
         dispatch(deleteUserFailure(data.message));
         // alert(data.message);
         return;
       }
       dispatch(deleteUserSuccess(data));
-      
     } catch (error) {
       dispatch(deleteUserFailure(error.message));
     }
-  }
+  };
 
   const handleSignOut = async () => {
     try {
-      dispatch(signOutUserStart())
-      const res = await fetch("/api/auth/signout", {method: "GET"});
+      dispatch(signOutUserStart());
+      const res = await fetch("/api/auth/signout", { method: "GET" });
       const data = await res.json();
-      if(data.success === false){
+      if (data.success === false) {
         alert(data.message);
         return;
       }
       dispatch(signOutUserSuccess(data));
     } catch (error) {
-       dispatch(signOutUserFailure(data));
+      dispatch(signOutUserFailure(data));
     }
-  
-  }
+  };
 
   return (
     <div className="p-3 max-w-lg mx-auto">
@@ -253,11 +255,20 @@ export default function Profile() {
       </form>
 
       <div className="flex justify-between mt-3">
-        <span onClick={handleDeleteUser} className="text-red-700 cursor-pointer">Delete Account</span>
-        <span onClick={handleSignOut} className="text-red-700 cursor-pointer">Sign Out</span>
+        <span
+          onClick={handleDeleteUser}
+          className="text-red-700 cursor-pointer"
+        >
+          Delete Account
+        </span>
+        <span onClick={handleSignOut} className="text-red-700 cursor-pointer">
+          Sign Out
+        </span>
       </div>
       {/* <p className="text-red-700">{error ? error : " "}</p> */}
-      <p className="text-green-700">{updateSuccess ? "User Updated Successfully" : " "}</p>
+      <p className="text-green-700">
+        {updateSuccess ? "User Updated Successfully" : " "}
+      </p>
     </div>
   );
 }
