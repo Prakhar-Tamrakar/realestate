@@ -46,9 +46,9 @@ import {
   signOutUserStart,
   signOutUserSuccess,
   signOutUserFailure,
-} from "./redux/user/userSlice";
-import { deleteUser } from "../../api/controllers/user.controller";
-
+} from "../redux/user/userSlice";
+import { deleteUser } from "../../../api/controllers/user.controller";
+import { Link } from "react-router-dom";
 export default function Profile() {
   const { currentUser } = useSelector((state) => state.user);
   const dispatch = useDispatch();
@@ -252,6 +252,8 @@ export default function Profile() {
         >
           {uploading ? "Uploading..." : "Update"}
         </button>
+        <Link to={"/create-listing"} className="bg-green-700 hover:opacity-90 p-3 rounded-lg text-white uppercase text-center"> create Listing
+        </Link>
       </form>
 
       <div className="flex justify-between mt-3">
