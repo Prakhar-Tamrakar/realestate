@@ -1,6 +1,64 @@
-import React from "react";
+
+import {
+  ImageKitAbortError,
+  ImageKitInvalidRequestError,
+  ImageKitServerError,
+  ImageKitUploadNetworkError,
+  upload,
+} from "@imagekit/react";
+
+import React, { useState } from "react";
 
 const CreateListing = () => {
+  const [selectedFile, setSelectedFile] = useState([]);
+  const [urlList, setUrlList] = useState([]);
+  const [uploading, setUploading] = useState(false);
+
+  const handleUpload = async () => {
+    if (!selectedFile.length) {
+      alert("Please select at least one image.");
+      return;
+    }
+
+    setUploading(true);
+    const uploadedUrls = [];
+
+    for (let i = 0; i < selectedFile.length; i++) {
+      const file = selectedFile[i];
+      try {
+        const authRes = await fetch("/api/imagekit-auth");
+        const { signature, expire, token, publicKey } = await authRes.json();
+
+        const uploadResponse = await upload({
+          file,
+          fileName: `${Date.now()}_${file.name}`,
+          publicKey,
+          token,
+          expire,
+          signature,
+        });
+
+        uploadedUrls.push(uploadResponse.url);
+      } catch (error) {
+        let message = "Image upload failed";
+        if (error instanceof ImageKitAbortError) message = "Upload aborted";
+        else if (error instanceof ImageKitInvalidRequestError)
+          message = "Invalid upload request";
+        else if (error instanceof ImageKitUploadNetworkError)
+          message = "Network error during upload";
+        else if (error instanceof ImageKitServerError)
+          message = "ImageKit server error";
+
+        alert(message);
+        setUploading(false);
+        return;
+      }
+    }
+
+    setUrlList((prev) => [...prev, ...uploadedUrls]); // ✅ add all URLs
+    setUploading(false);
+    };
+
   return (
     <main className="max-w-4xl mx-auto p-3">
       <h1 className="text-3xl font-semibold text-center mt-2 mb-5">
@@ -121,9 +179,14 @@ const CreateListing = () => {
               accept="image/*"
               multiple
               className=" border border-gray-300 rounded w-full p-3"
+              onChange={(e) => setSelectedFile(e.target.files)}
             />
-            <button className="p-3 text-green-700 border border-green-700 rounded uppercase hover:shadow-lg disabled:opacity-80">
-              Upload
+            <button
+              type="button"
+              onClick={handleUpload}
+              className="p-3 text-green-700 border border-green-700 rounded uppercase hover:shadow-lg disabled:opacity-80"
+            >
+              {uploading ? "Uploading..." : "Upload"}
             </button>
           </div>
           <button className="bg-slate-700 text-white rounded-lg p-3 uppercase hover:opacity-90 mt-4 disabled:opacity-80">
