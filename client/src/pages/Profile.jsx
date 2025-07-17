@@ -1,32 +1,3 @@
-// import React, { useRef } from "react";
-// import { useSelector } from "react-redux";
-
-// export default function Profile() {
-//   const { currentUser } = useSelector((state) => state.user);
-//   const fileRef = useRef(null);
-//   return (
-//     <div className="p-3 max-w-lg mx-auto">
-//       <h1 className="text-black text-center text-3xl font-semibold my-3 ">Profile</h1>
-//       <form className="flex flex-col gap-4 mt-5 max-w-lg mx-auto">
-//         <input type="file" ref = {fileRef} hidden accept="image/*"/>
-//         <img
-//           className="h-24 w-24  rounded-full object-cover self-center mt-2 cursor-pointer"
-//           src={currentUser.avatar}
-//           alt="userImage"
-//           onClick={() => fileRef.current.click()}
-//         />
-//         <input type="text" placeholder="username" id="username" className=" p-3 rounded-lg shadow-[0px_0px_2px_0px_rgba(59,_130,_246,_0.5)]" />
-//         <input type="email" placeholder="email" id="email" className="shadow-[0px_0px_2px_0px_rgba(59,_130,_246,_0.5)] p-3 rounded-lg" />
-//         <input type="text" placeholder="password" id= "password" className="shadow-[0px_0px_2px_0px_rgba(59,_130,_246,_0.5)] p-3 rounded-lg" />
-//         <button className="bg-slate-700 text-white rounded-lg p-3 uppercase hover:opacity-90">update</button>
-//       </form>
-//       <div className="flex justify-between mt-3">
-//         <span className="text-red-700 cursor-pointer ">Delete Account</span>
-//         <span className="text-red-700 cursor-pointer">Sign Out</span>
-//       </div>
-//     </div>
-//   );
-// }
 import React, { useRef, useState } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import {
@@ -47,8 +18,9 @@ import {
   signOutUserSuccess,
   signOutUserFailure,
 } from "../redux/user/userSlice";
-import { deleteUser } from "../../../api/controllers/user.controller";
 import { Link } from "react-router-dom";
+import ConfirmationModal from "../components/ConfirmationModal";
+
 export default function Profile() {
   const { currentUser } = useSelector((state) => state.user);
   const dispatch = useDispatch();
@@ -63,6 +35,10 @@ export default function Profile() {
     password: "",
   });
   const [updateSuccess, setUpdateSuccess] = useState(false);
+
+  // ✅ Move these inside the component
+  const [showSignOutConfirm, setShowSignOutConfirm] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
   const handleChange = (e) => {
     setFormData((prev) => ({
@@ -99,7 +75,6 @@ export default function Profile() {
 
         imageUrl = uploadResponse.url;
         setAvatarUrl(imageUrl);
-        console.log("Image uploaded successfully:", imageUrl);
       } catch (error) {
         let message = "Image upload failed";
         if (error instanceof ImageKitAbortError) message = "Upload aborted";
@@ -132,17 +107,10 @@ export default function Profile() {
         }),
       });
 
-      if (!res.ok) {
-        const errorText = await res.text();
-        throw new Error(`Server error: ${res.status} - ${errorText}`);
-      }
-
       const data = await res.json();
-      console.log("Update response:", data);
-
-      if (data.success === false) {
+      if (!res.ok || data.success === false) {
         dispatch(updateUserFailure(data.message));
-        alert(data.message);
+        alert(data.message || "Failed to update user.");
         return;
       }
 
@@ -156,11 +124,11 @@ export default function Profile() {
       );
       setUpdateSuccess(true);
     } catch (error) {
-      console.error("Update error:", error);
       dispatch(updateUserFailure(error.message));
       alert("Something went wrong while updating profile.");
     }
   };
+
   const handleDeleteUser = async () => {
     try {
       dispatch(deleteUserStart());
@@ -168,9 +136,8 @@ export default function Profile() {
         method: "DELETE",
       });
       const data = await res.json();
-      if (data.success == false) {
+      if (!res.ok || data.success === false) {
         dispatch(deleteUserFailure(data.message));
-        // alert(data.message);
         return;
       }
       dispatch(deleteUserSuccess(data));
@@ -190,7 +157,7 @@ export default function Profile() {
       }
       dispatch(signOutUserSuccess(data));
     } catch (error) {
-      dispatch(signOutUserFailure(data));
+      dispatch(signOutUserFailure(error));
     }
   };
 
@@ -252,24 +219,54 @@ export default function Profile() {
         >
           {uploading ? "Uploading..." : "Update"}
         </button>
-        <Link to={"/create-listing"} className="bg-green-700 hover:opacity-90 p-3 rounded-lg text-white uppercase text-center"> create Listing
+
+        <Link
+          to={"/create-listing"}
+          className="bg-green-700 hover:opacity-90 p-3 rounded-lg text-white uppercase text-center"
+        >
+          Create Listing
         </Link>
       </form>
 
       <div className="flex justify-between mt-3">
         <span
-          onClick={handleDeleteUser}
+          onClick={() => setShowDeleteConfirm(true)}
           className="text-red-700 cursor-pointer"
         >
           Delete Account
         </span>
-        <span onClick={handleSignOut} className="text-red-700 cursor-pointer">
+        <span
+          onClick={() => setShowSignOutConfirm(true)}
+          className="text-red-700 cursor-pointer"
+        >
           Sign Out
         </span>
       </div>
-      {/* <p className="text-red-700">{error ? error : " "}</p> */}
-      <p className="text-green-700">
-        {updateSuccess ? "User Updated Successfully" : " "}
+
+      {showDeleteConfirm && (
+        <ConfirmationModal
+          message="Are you sure you want to delete your account?"
+          onConfirm={() => {
+            setShowDeleteConfirm(false);
+            handleDeleteUser();
+          }}
+          onCancel={() => setShowDeleteConfirm(false)}
+        />
+      )}
+
+      {showSignOutConfirm && (
+        <ConfirmationModal
+          message="Are you sure you want to sign out?"
+          onConfirm={() => {
+            setShowSignOutConfirm(false);
+            handleSignOut();
+          }}
+          onCancel={() => setShowSignOutConfirm(false)}
+        />
+      )}
+
+      <p className="text-green-700 mt-2">
+        {updateSuccess ? "User Updated Successfully" : ""}
       </p>
     </div>
   );
