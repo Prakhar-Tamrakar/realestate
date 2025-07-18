@@ -20,6 +20,7 @@ import {
 } from "../redux/user/userSlice";
 import { Link } from "react-router-dom";
 import ConfirmationModal from "../components/ConfirmationModal";
+import { set } from "mongoose";
 
 export default function Profile() {
   const { currentUser } = useSelector((state) => state.user);
@@ -35,6 +36,9 @@ export default function Profile() {
     password: "",
   });
   const [updateSuccess, setUpdateSuccess] = useState(false);
+  const [listings, setListings] = useState([]);
+  const [open, setOpen] = useState(false);
+  const [hasFetched, setHasFetched] = useState(false);
 
   // ✅ Move these inside the component
   const [showSignOutConfirm, setShowSignOutConfirm] = useState(false);
@@ -161,6 +165,47 @@ export default function Profile() {
     }
   };
 
+  const handleShowListing = async () => {
+    // If already fetched once, just toggle visibility
+    if (hasFetched) {
+      setOpen(!open);
+      return;
+    }
+
+    try {
+      const res = await fetch(`/api/user/listings/${currentUser._id}`);
+      const data = await res.json();
+
+      if (!res.ok || data.success === false) {
+        alert(data.message || "Failed to fetch listings.");
+        return;
+      }
+
+      setListings(data.data);
+      setHasFetched(true);
+      setOpen(true);
+    } catch (error) {
+      alert("Something went wrong.");
+    }
+  };
+
+
+  const handleDeleteListing = (listingId) => async () => {
+    try {
+      const res = await fetch(`/api/listing/delete/${listingId}`, {
+        method: "DELETE",
+      });
+      const data = await res.json();
+      if (!res.ok || data.success === false) {
+        alert(data.message || "Failed to delete listing.");
+        return;
+      }
+      setListings((prev) => prev.filter((listing) => listing._id !== listingId));
+    } catch (error) {
+      alert("Something went wrong while deleting the listing.");
+    }
+  }
+
   return (
     <div className="p-3 max-w-lg mx-auto">
       <h1 className="text-black text-center text-3xl font-semibold my-3">
@@ -268,6 +313,47 @@ export default function Profile() {
       <p className="text-green-700 mt-2">
         {updateSuccess ? "User Updated Successfully" : ""}
       </p>
+
+      <button
+        onClick={handleShowListing}
+        className="bg-gray-300 text-center font-bold text-black rounded p-1 w-full"
+      >
+        {open ? "Hide Listing" : "Show Listing"}
+      </button>
+
+      {open && (
+        <>
+          <p className="font-bold text-center mt-4 text-2xl">Your Listings</p>
+          <ul>
+            {listings.map((listing) => (
+              <li
+                key={listing._id}
+                className="flex justify-between gap-4 h-15 shadow-[0px_4px_6px_0px_rgba(0,_0,_0,_0.1)] p-2 my-2 rounded"
+              >
+                <div className="flex items-center gap-4">
+                  <img
+                    className="rounded-full"
+                    src={listing.imageUrls[0]}
+                    width={40}
+                    height={40}
+                    alt="no image"
+                  />
+                  <div>
+                    <h3 className="font-bold">Name: {listing.name}</h3>
+                    <p className="text-gray-500">
+                      Price: ${listing.regularPrice}
+                    </p>
+                  </div>
+                </div>
+                <div>
+                  <button className="text-green-500 block">Edit</button>
+                  <button onClick={handleDeleteListing(listing._id)} className="text-red-600">Delete</button>
+                </div>
+              </li>
+            ))}
+          </ul>
+        </>
+      )}
     </div>
   );
 }
