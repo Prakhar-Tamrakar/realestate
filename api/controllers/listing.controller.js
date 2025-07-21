@@ -31,23 +31,28 @@ export const deleteListing = async (req, res, next) => {
 };
 
 export const updateListing = async (req, res, next) => {
-    const listing = await Listing.findById(req.params.id);
-    if (!listing) {
-        return next(errorHandler(404, "Listing not found!"));
-        }
-    if (listing.userRef.toString() !== req.user.id) {
-        return next(errorHandler(403, "You can only update your own listings!"));
-    }
-    try {
+  const listing = await Listing.findById(req.params.id);
+  if (!listing) {
+    return next(errorHandler(404, "Listing not found!"));
+  }
+  if (listing.userRef.toString() !== req.user.id) {
+    return next(errorHandler(403, "You can only update your own listings!"));
+  }
+  try {
+    const updatedListing = await Listing.findByIdAndUpdate(
+      req.params.id,
+      req.body,
+      { new: true }
+    );
 
-        const updatedListing = await Listing.findByIdAndUpdate(req.params.id, req.body, { new: true });
-        res.status(200).json(updatedListing);
-        
-    } catch (error) {
-        next(errorHandler(500, error.message));
-        
-    }
-}
+    res.status(200).json({
+      success: true,
+      updatedListing,
+    });
+  } catch (error) {
+    next(errorHandler(500, error.message));
+  }
+};
 
 export const getListing = async (req, res, next) => {
   try {
@@ -55,8 +60,11 @@ export const getListing = async (req, res, next) => {
     if (!listing) {
       return next(errorHandler(404, "Listing not found!"));
     }
-    res.status(200).json(listing);
+    res.status(200).json({
+      success: true,
+      listing,
+    });
   } catch (error) {
     next(errorHandler(500, error.message));
   }
-}
+};

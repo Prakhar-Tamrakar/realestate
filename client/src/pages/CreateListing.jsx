@@ -34,6 +34,7 @@ const CreateListing = () => {
   const { currentUser } = useSelector((state) => state.user);
 
   const [error, setError] = useState("");
+  const[imageUploadError, setImageUploadError] = useState("");
   const [loading, setLoading] = useState(false);
 
   // ! This function handles the change in form fields
@@ -335,8 +336,26 @@ const CreateListing = () => {
               id="images"
               accept="image/*"
               multiple
-              className=" border border-gray-300 rounded w-full p-3"
-              onChange={(e) => setSelectedFile(e.target.files)}
+              className="border border-gray-300 rounded w-full p-3"
+              onChange={(e) => {
+                const files = e.target.files;
+                const maxImages = 6;
+                const minImages = 1;
+
+                if (files.length < minImages) {
+                  setImageUploadError(`Please select at least ${minImages} image${minImages > 1 ? "s" : ""}.`);
+                  e.target.value = null; // reset input
+                  return;
+                }
+
+                if (files.length > maxImages) {
+                  setImageUploadError(`You can upload a maximum of ${maxImages} images.`);
+                  e.target.value = null; // reset input
+                  return;
+                }
+                if(files.length + formData.imageUrls.length > minImages && files.length + formData.imageUrls.length < maxImages) setImageUploadError("");
+                setSelectedFile(files);
+              }}
             />
 
             <button
@@ -374,12 +393,13 @@ const CreateListing = () => {
             </div>
           </div>
           {error && <p className="text-red-500 mt-2">{error}</p>}
+          {imageUploadError && <p className="text-red-500 mt-2">{imageUploadError}</p>}
           <button
             type="submit"
             className="bg-slate-700 text-white rounded-lg p-3 uppercase hover:opacity-90 mt-4 disabled:opacity-80"
             disabled={formData.imageUrls.length < 1 || uploading || loading}
           >
-          Create Listing
+            Create Listing
           </button>
         </div>
       </form>
