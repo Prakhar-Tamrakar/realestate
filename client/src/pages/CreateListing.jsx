@@ -5,6 +5,7 @@ import {
   ImageKitUploadNetworkError,
   upload,
 } from "@imagekit/react";
+import imageCompression from "browser-image-compression";
 
 import { useState } from "react";
 import { useSelector } from "react-redux";
@@ -29,13 +30,45 @@ const CreateListing = () => {
 
   const navigate = useNavigate();
   const [selectedFile, setSelectedFile] = useState([]);
-  const [urlList, setUrlList] = useState([]);
   const [uploading, setUploading] = useState(false);
   const { currentUser } = useSelector((state) => state.user);
 
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
+  // ! This function handles the change in form fields
+  const handleOnChange = (e) => {
+    if (e.target.type === "checkbox") {
+      setFormData((prev) => ({
+        ...prev,
+        [e.target.id]: e.target.checked,
+      }));
+      return;
+    }
+    setFormData((prev) => ({
+      ...prev,
+      [e.target.id]: e.target.value,
+    }));
+  };
+
+  //! This function compresses the image before uploading it to ImageKit (used in handleUpload function)
+  const compressImage = async (file) => {
+    const options = {
+      maxSizeMB: 1, // Target max size (MB)
+      maxWidthOrHeight: 1024, // Resize to max width/height
+      useWebWorker: true,
+    };
+    try {
+      const compressedFile = await imageCompression(file, options);
+      return compressedFile;
+    } catch (error) {
+      console.error("Compression failed:", error);
+      return file; // fallback
+    }
+  };
+
+  //! this function handles the image upload to ImageKit
+  //! It uses the ImageKit SDK to upload images and returns the uploaded URLs.
   const handleUpload = async () => {
     if (!selectedFile.length) {
       alert("Please select at least one image.");
@@ -45,14 +78,15 @@ const CreateListing = () => {
     const uploadedUrls = [];
 
     for (let i = 0; i < selectedFile.length; i++) {
-      const file = selectedFile[i];
+      const compressedFile = await compressImage(selectedFile[i]);
       try {
         const authRes = await fetch("/api/imagekit-auth");
         const { signature, expire, token, publicKey } = await authRes.json();
 
         const uploadResponse = await upload({
-          file,
-          fileName: `${Date.now()}_${file.name}`,
+          file: compressedFile,
+          fileName: `${Date.now()}_${compressedFile.name}`,
+          folder: "PropertyImages",
           publicKey,
           token,
           expire,
@@ -75,19 +109,11 @@ const CreateListing = () => {
         return;
       }
     }
-
     setFormData((prev) => ({ ...prev, imageUrls: uploadedUrls }));
-
-    // setUrlList((prev) => [...prev, ...uploadedUrls]);
-    // setFormData((prev) => ({
-    //   ...prev,
-    //   imageUrls: uploadedUrls,
-    // }));
     setUploading(false);
   };
 
-  // todo : this method will handle the creation of the listing
-
+  //! This function handles the form submission for creating a new listing.
   const handleCreateListing = async (e) => {
     e.preventDefault();
     if (formData.regularPrice <= formData.discountedPrice) {
@@ -136,7 +162,7 @@ const CreateListing = () => {
             minLength="1"
             required
             value={formData.name}
-            onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+            onChange={handleOnChange}
           />
 
           {/* // * description field  */}
@@ -147,9 +173,7 @@ const CreateListing = () => {
             id="description"
             required
             value={formData.description}
-            onChange={(e) =>
-              setFormData({ ...formData, description: e.target.value })
-            }
+            onChange={handleOnChange}
           />
 
           {/* // * Address field  */}
@@ -157,12 +181,10 @@ const CreateListing = () => {
             type="text"
             placeholder="Address"
             className="border rounded-lg p-3"
-            id="Address"
+            id="address"
             required
             value={formData.address}
-            onChange={(e) =>
-              setFormData({ ...formData, address: e.target.value })
-            }
+            onChange={handleOnChange}
           />
 
           {/* // * sell and rent field  */}
@@ -170,17 +192,12 @@ const CreateListing = () => {
             <div className="flex gap-2">
               <input
                 type="radio"
-                id="sell"
+                id="type"
                 name="type" // ✅ same name groups them
                 value="sell"
                 className="w-5"
                 checked={formData.type === "sell"}
-                onChange={(e) => {
-                  setFormData((prev) => ({
-                    ...prev,
-                    type: e.target.value,
-                  }));
-                }}
+                onChange={handleOnChange}
               />
               <span>Sell</span>
             </div>
@@ -188,17 +205,12 @@ const CreateListing = () => {
             <div className="flex gap-2">
               <input
                 type="radio"
-                id="rent"
+                id="type"
                 name="type" // ✅ same name groups them
                 value="rent"
                 className="w-5"
                 checked={formData.type === "rent"}
-                onChange={(e) => {
-                  setFormData((prev) => ({
-                    ...prev,
-                    type: e.target.value,
-                  }));
-                }}
+                onChange={handleOnChange}
               />
               <span>Rent</span>
             </div>
@@ -209,12 +221,7 @@ const CreateListing = () => {
                 type="checkbox"
                 id="parking"
                 className="w-5"
-                onChange={(e) => {
-                  setFormData((prev) => ({
-                    ...prev,
-                    parking: e.target.checked,
-                  }));
-                }}
+                onChange={handleOnChange}
               />
               <span>Parking spot</span>
             </div>
@@ -224,12 +231,7 @@ const CreateListing = () => {
                 type="checkbox"
                 id="furnished"
                 className="w-5"
-                onChange={(e) => {
-                  setFormData((prev) => ({
-                    ...prev,
-                    furnished: e.target.checked,
-                  }));
-                }}
+                onChange={handleOnChange}
               />
               <span>Furnished</span>
             </div>
@@ -238,12 +240,7 @@ const CreateListing = () => {
                 type="checkbox"
                 id="offer"
                 className="w-5"
-                onChange={(e) => {
-                  setFormData((prev) => ({
-                    ...prev,
-                    offer: e.target.checked,
-                  }));
-                }}
+                onChange={handleOnChange}
               />
               <span>Offer</span>
             </div>
@@ -259,12 +256,7 @@ const CreateListing = () => {
                 max="10"
                 required
                 className="p-3 border border-gray-300 rounded-lg"
-                onChange={(e) => {
-                  setFormData((prev) => ({
-                    ...prev,
-                    bedrooms: e.target.value,
-                  }));
-                }}
+                onChange={handleOnChange}
               />
               <p>Beds</p>
             </div>
@@ -276,12 +268,7 @@ const CreateListing = () => {
                 max="10"
                 required
                 className="p-3 border border-gray-300 rounded-lg"
-                onChange={(e) => {
-                  setFormData((prev) => ({
-                    ...prev,
-                    bathrooms: e.target.value,
-                  }));
-                }}
+                onChange={handleOnChange}
               />
               <p>Baths</p>
             </div>
@@ -293,12 +280,7 @@ const CreateListing = () => {
                 max="1000000"
                 required
                 className="p-3 border border-gray-300 rounded-lg"
-                onChange={(e) => {
-                  setFormData((prev) => ({
-                    ...prev,
-                    regularPrice: e.target.value,
-                  }));
-                }}
+                onChange={handleOnChange}
               />
               <div className=" flex flex-col items-center">
                 <p>Regular price</p>
@@ -320,12 +302,7 @@ const CreateListing = () => {
                   max="100000"
                   required
                   value={formData.discountedPrice}
-                  onChange={(e) =>
-                    setFormData((prev) => ({
-                      ...prev,
-                      discountedPrice: e.target.value,
-                    }))
-                  }
+                  onChange={handleOnChange}
                   className="p-3 border border-gray-300 rounded-lg"
                 />
                 <div className=" flex flex-col items-center">
@@ -402,7 +379,7 @@ const CreateListing = () => {
             className="bg-slate-700 text-white rounded-lg p-3 uppercase hover:opacity-90 mt-4 disabled:opacity-80"
             disabled={formData.imageUrls.length < 1 || uploading || loading}
           >
-            Create Listing
+          Create Listing
           </button>
         </div>
       </form>

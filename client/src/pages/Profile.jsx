@@ -43,6 +43,10 @@ export default function Profile() {
   // ✅ Move these inside the component
   const [showSignOutConfirm, setShowSignOutConfirm] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [showDeleteListingConfirm, setShowDeleteListingConfirm] =
+    useState(false);
+  const [selectedListingId, setSelectedListingId] = useState(null);
+  console.log(selectedListingId);
 
   const handleChange = (e) => {
     setFormData((prev) => ({
@@ -71,6 +75,7 @@ export default function Profile() {
         const uploadResponse = await upload({
           file: selectedFile,
           fileName: `${Date.now()}_${selectedFile.name}`,
+          folder: "ProfileImages",
           publicKey,
           token,
           expire,
@@ -189,7 +194,6 @@ export default function Profile() {
     }
   };
 
-
   const handleDeleteListing = (listingId) => async () => {
     try {
       const res = await fetch(`/api/listing/delete/${listingId}`, {
@@ -200,11 +204,13 @@ export default function Profile() {
         alert(data.message || "Failed to delete listing.");
         return;
       }
-      setListings((prev) => prev.filter((listing) => listing._id !== listingId));
+      setListings((prev) =>
+        prev.filter((listing) => listing._id !== listingId)
+      );
     } catch (error) {
       alert("Something went wrong while deleting the listing.");
     }
-  }
+  };
 
   return (
     <div className="p-3 max-w-lg mx-auto">
@@ -332,10 +338,10 @@ export default function Profile() {
               >
                 <div className="flex items-center gap-4">
                   <img
-                    className="rounded-full"
+                    className="rounded"
                     src={listing.imageUrls[0]}
-                    width={40}
-                    height={40}
+                    width={80}
+                    height={80}
                     alt="no image"
                   />
                   <div>
@@ -346,13 +352,37 @@ export default function Profile() {
                   </div>
                 </div>
                 <div>
+                  <Link to={`/update-listing/${listing._id}`}>
                   <button className="text-green-500 block">Edit</button>
-                  <button onClick={handleDeleteListing(listing._id)} className="text-red-600">Delete</button>
+                  </Link>
+                  <button
+                    onClick={() => {
+                      setSelectedListingId(listing._id);
+                      setShowDeleteListingConfirm(true);
+                    }}
+                    className="text-red-600"
+                  >
+                    Delete
+                  </button>
                 </div>
               </li>
             ))}
           </ul>
         </>
+      )}
+      {showDeleteListingConfirm && selectedListingId && (
+        <ConfirmationModal
+          message="Are you sure you want to delete this listing?"
+          onConfirm={() => {
+            handleDeleteListing(selectedListingId)();
+            setShowDeleteListingConfirm(false);
+            setSelectedListingId(null);
+          }}
+          onCancel={() => {
+            setShowDeleteListingConfirm(false);
+            setSelectedListingId(null);
+          }}
+        />
       )}
     </div>
   );
