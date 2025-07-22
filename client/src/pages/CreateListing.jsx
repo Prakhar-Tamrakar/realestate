@@ -55,7 +55,7 @@ const CreateListing = () => {
   //! This function compresses the image before uploading it to ImageKit (used in handleUpload function)
   const compressImage = async (file) => {
     const options = {
-      maxSizeMB: 1, // Target max size (MB)
+      maxSizeMB: 5, // Target max size (MB)
       maxWidthOrHeight: 1024, // Resize to max width/height
       useWebWorker: true,
     };
@@ -80,13 +80,16 @@ const CreateListing = () => {
 
     for (let i = 0; i < selectedFile.length; i++) {
       const compressedFile = await compressImage(selectedFile[i]);
+      // const file = selectedFile[i];
       try {
         const authRes = await fetch("/api/imagekit-auth");
         const { signature, expire, token, publicKey } = await authRes.json();
 
         const uploadResponse = await upload({
           file: compressedFile,
+          // file,
           fileName: `${Date.now()}_${compressedFile.name}`,
+          // fileName: `${Date.now()}_${file.name}`,
           folder: "PropertyImages",
           publicKey,
           token,

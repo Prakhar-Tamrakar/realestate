@@ -345,7 +345,9 @@ export default function Profile() {
                     alt="no image"
                   />
                   <div>
+                    <Link to={`/listing/${listing._id}`}>
                     <h3 className="font-bold">Name: {listing.name}</h3>
+                    </Link>
                     <p className="text-gray-500">
                       Price: ${listing.regularPrice}
                     </p>

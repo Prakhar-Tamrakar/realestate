@@ -141,47 +141,63 @@ const UpdateListing = () => {
         return;
       }
     }
-    setFormData((prev) => ({ ...prev, imageUrls: uploadedUrls }));
+   setFormData((prev) => ({
+    ...prev,
+    imageUrls: [...prev.imageUrls, ...uploadedUrls],
+  }));
+    setSelectedFile([]);
+    setImageUploadError("");
     setUploading(false);
   };
 
   //! This function handles the form submission for update listing.
-  const handleCreateListing = async (e) => {
-    e.preventDefault();
-    if (formData.regularPrice <= formData.discountedPrice) {
-      setError("Discounted price cannot be greater than regular price.");
-      return;
-    }
-    setLoading(true);
-    try {
-      const res = await fetch(`/api/listing/update/${params.id}`, {
-        method: "POST",
-        headers: { "content-type": "application/json" },
-        body: JSON.stringify(formData),
-      });
+  const handleUpdateListing = async (e) => {
+  e.preventDefault();
 
-      const data = await res.json();
-      if (data.success == false) {
-        alert(data.message);
-        return;
-      }
-      setLoading(false);
-      console.log("update Listing successfully:", data);
-      alert("update Listing successfully");
-      navigate(`/listing/${params._id}`);
-    } catch (error) {
-      setError("Failed to create listing. Please try again.");
-      setLoading(false);
+  if (formData.regularPrice <= formData.discountedPrice) {
+    setError("Discounted price cannot be greater than regular price.");
+    return;
+  }
+
+  setLoading(true);
+  try {
+    const res = await fetch(`/api/listing/update/${params.id}`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(formData),
+    });
+
+    const data = await res.json();
+
+    if (!res.ok || data.success === false) {
+      throw new Error(data.message || "Failed to update listing.");
     }
-  };
+
+    setLoading(false);
+    console.log("update Listing successfully:", data);
+
+    const listID = data.updatedListing?._id;
+    if (!listID) {
+      throw new Error("Listing ID not returned from server.");
+    }
+
+    alert("Listing updated successfully.");
+    navigate(`/listing/${listID}`);
+  } catch (error) {
+    console.error("Update error:", error);
+    setError(error.message || "Failed to update listing. Please try again.");
+    setLoading(false);
+  }
+};
+
 
   return (
     <main className="max-w-5xl mx-auto p-3">
       <h1 className="text-3xl font-semibold text-center mt-2 mb-5">
-        Update your Listing
+        Create a Listing
       </h1>
       <form
-        onSubmit={handleCreateListing}
+        onSubmit={handleUpdateListing}
         className="flex flex-col w-full gap-4 sm:flex-row  p-5 rounded-lg shadow-[0px_5px_13px_5px_rgba(0,_0,_0,_0.1)]"
       >
         <div className=" flex flex-col gap-4 flex-1   ">
@@ -196,7 +212,6 @@ const UpdateListing = () => {
             value={formData.name}
             onChange={handleOnChange}
           />
-
           {/* // * description field  */}
           <textarea
             type="text"
