@@ -81,7 +81,7 @@ const UpdateListing = () => {
   //! This function compresses the image before uploading it to ImageKit (used in handleUpload function)
   const compressImage = async (file) => {
     const options = {
-      maxSizeMB: 1, // Target max size (MB)
+      maxSizeMB: 20, // Target max size (MB)
       maxWidthOrHeight: 1024, // Resize to max width/height
       useWebWorker: true,
     };
