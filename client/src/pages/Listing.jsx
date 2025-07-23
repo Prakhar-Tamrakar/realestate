@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Navigation, Pagination, Autoplay } from "swiper/modules";
-
+import { useSelector } from 'react-redux';
 import {
   FaBath,
   FaBed,
@@ -16,12 +16,18 @@ import {
 import "swiper/css";
 import "swiper/css/navigation";
 import "swiper/css/pagination";
+import Contact from "../components/Contact";
 
 export default function Listing() {
   const [listingData, setListingData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [copied, setCopied] = useState(false);
   const [error, setError] = useState(null);
+  const [contact , setContact] = useState(false);
+  const { currentUser } = useSelector((state) => state.user);
+
+
+ 
 
   const params = useParams();
   const { id } = params;
@@ -31,7 +37,7 @@ export default function Listing() {
       try {
         const res = await fetch(`/api/listing/get/${id}`);
         const data = await res.json();
-        console.log(data);
+        // console.log(data);
         if (data.success) {
           setListingData(data.listing);
           setLoading(false);
@@ -48,6 +54,11 @@ export default function Listing() {
 
     fetchListingDetails();
   }, [id]);
+
+  // ! function to set contact false
+  const handleContact = () =>{
+    setContact(true);
+  }
 
   return (
     <main>
@@ -98,10 +109,12 @@ export default function Listing() {
                   <p className="text-2xl font-semibold">
                     {listingData.name} - ${" "}
                     {listingData.offer
-                      ? listingData.discountPrice.toLocaleString("en-US")
+                      ? listingData.discountedPrice.toLocaleString("en-US")
                       : listingData.regularPrice.toLocaleString("en-US")}
                     {listingData.type === "rent" && " / month"}
                   </p>
+               
+              
                   <p className="flex items-center mt-2 gap-2 text-slate-600  text-sm">
                     <FaMapMarkerAlt className="text-green-700" />
                     {listingData.address}
@@ -113,7 +126,7 @@ export default function Listing() {
                     {listingData.offer && (
                       <p className="bg-green-900 w-full max-w-[200px] text-white text-center p-1 rounded-md">
                         $
-                        {+listingData.regularPrice - +listingData.discountPrice}{" "}
+                        {listingData.regularPrice - listingData.discountedPrice}{" "}
                         OFF
                       </p>
                     )}
@@ -128,7 +141,7 @@ export default function Listing() {
                     <li className="flex items-center gap-1 whitespace-nowrap ">
                       <FaBed className="text-lg" />
                       {listingData.bedrooms > 1
-                        ? `${listingData.bedrooms} beds `
+                        ? `${listingData.bedrooms} beds`
                         : `${listingData.bedrooms} bed `}
                     </li>
                     <li className="flex items-center gap-1 whitespace-nowrap ">
@@ -146,6 +159,16 @@ export default function Listing() {
                       {listingData.furnished ? "Furnished" : "Unfurnished"}
                     </li>
                   </ul>
+                    {contact && (
+                    <Contact listing={listingData} />
+                  )}
+                  {currentUser && currentUser._id == listingData.userRef && !contact  && (
+                    <button onClick={handleContact} className="bg-slate-700 text-white rounded-lg uppercase hover:opacity-95 p-3">
+                      Contact Landlord
+                    </button>
+
+                  )}
+                
                 </div>
               </>
             )}
