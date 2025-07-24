@@ -3,7 +3,7 @@ import mongoose from 'mongoose';
 import dotenv from 'dotenv';
 import userRouter from './routes/user.route.js'
 import authRouter from './routes/auth.route.js'
-import ImageKit from 'imagekit';
+import ImageKit from 'imagekit';     
 import cookieParser from 'cookie-parser';
 import listingRouter from './routes/listing.route.js';
 dotenv.config();
@@ -20,7 +20,7 @@ app.use(cookieParser());
 
 
 const imagekit = new ImageKit({
-  urlEndpoint: 'https://ik.imagekit.io/prakhar3091/', // https://ik.imagekit.io/your_imagekit_id
+  urlEndpoint: 'https://ik.imagekit.io/prakhar3091/', 
   publicKey: process.env.IMAGEKIT_PUBLIC_KEY,
   privateKey: process.env.IMAGEKIT_PRIVATE_KEY
 });
