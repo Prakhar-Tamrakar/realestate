@@ -162,7 +162,7 @@ export default function Listing() {
                     {contact && (
                     <Contact listing={listingData} />
                   )}
-                  {currentUser && currentUser._id == listingData.userRef && !contact  && (
+                  {currentUser && currentUser._id !== listingData.userRef && !contact  && (
                     <button onClick={handleContact} className="bg-slate-700 text-white rounded-lg uppercase hover:opacity-95 p-3">
                       Contact Landlord
                     </button>

@@ -42,7 +42,7 @@ const CreateListing = () => {
     if (e.target.type === "checkbox") {
       setFormData((prev) => ({
         ...prev,
-        [e.target.id]: e.target.checked,
+        [e.target.id]: e.target.checked
       }));
       return;
     }
