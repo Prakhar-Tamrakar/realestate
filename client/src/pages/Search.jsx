@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import ListingItem from "../components/ListingItem";
 
 const Search = () => {
   const [sideBarData, setSideBarData] = useState({
@@ -128,6 +129,7 @@ const Search = () => {
               {" "}
               Search Term
             </label>
+            {/* //! searchTerm input field */}
             <input
               type="text"
               id="searchTerm"
@@ -140,6 +142,7 @@ const Search = () => {
           <div className="flex items-center flex-wrap gap-2 ">
             <label className="font-semibold">Type:</label>
             <div className="flex items-center gap-2">
+              {/* //! rent and sell input field */}
               <input
                 type="checkbox"
                 name=""
@@ -151,6 +154,7 @@ const Search = () => {
               <span>Rent & sell </span>
             </div>
             <div className="flex items-center gap-2">
+              {/* //! rent input field */}
               <input
                 type="checkbox"
                 name=""
@@ -162,6 +166,7 @@ const Search = () => {
               <span>Rent </span>
             </div>
             <div className="flex items-center gap-2">
+              {/* //! sell input field */}
               <input
                 type="checkbox"
                 name=""
@@ -173,6 +178,7 @@ const Search = () => {
               <span>sell</span>
             </div>
             <div className="flex items-center gap-2">
+              {/* //! offer input field */}
               <input
                 type="checkbox"
                 name=""
@@ -188,6 +194,7 @@ const Search = () => {
           <div className="flex items-center flex-wrap gap-2  ">
             <label className="font-semibold">Amenities:</label>
             <div className="flex items-center gap-2">
+              {/* //! parking input field */}
               <input
                 type="checkbox"
                 name=""
@@ -199,6 +206,7 @@ const Search = () => {
               <span>Parking </span>
             </div>
             <div className="flex items-center gap-2">
+              {/* //! furnished input field */}
               <input
                 type="checkbox"
                 name=""
@@ -213,6 +221,7 @@ const Search = () => {
 
           <div className="flex gap-2 items-center">
             <label className="font-semibold">Sort: </label>
+            {/* //! order and sort input field */}
             <select
               name=""
               id="sort_order"
@@ -226,6 +235,7 @@ const Search = () => {
               <option value="createdAt_asc">Oldest</option>
             </select>
           </div>
+          {/* //! form submit button, search button */}
           <button
             type="submit"
             className="bg-slate-700 text-white p-3 rounded-lg uppercase hover:opacity-95"
@@ -234,10 +244,22 @@ const Search = () => {
           </button>
         </form>
       </div>
-      <div className="">
+      {/* //! right side of the page  */}
+      <div className="flex-1">
         <h1 className="text-3xl font-semibold border-b border-gray-300 p-3 text-slate-700 mt-5 ">
           Listing results
         </h1>
+        <div className='p-7 flex flex-wrap gap-4'>
+          {listings.length < 1 && !loading && (
+            <p className="text-2xl text-slate-500 p-3">No Listing Found</p>
+          )}
+          {loading && <p className="text-center text-xl mt-3"> Loading... </p>}
+          {!loading && listings && (
+            listings.map((item)=>(
+              <ListingItem key={item._id} listing={item}/>
+            ))
+          ) }
+        </div>
       </div>
     </div>
   );
