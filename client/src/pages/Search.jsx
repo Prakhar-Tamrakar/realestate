@@ -12,7 +12,6 @@ const Search = () => {
     sort: "createdAt",
     order: "desc",
   });
-
   const [loading, setLoading] = useState(false);
   const [listings, setListings] = useState([]);
   const [showMore, setShowMore] = useState(false);
@@ -107,8 +106,7 @@ const Search = () => {
       const searchQuery = urlParams.toString();
       const res = await fetch(`/api/listing/get?${searchQuery}`);
       const data = await res.json();
-      console.log(data);
-      if (data.length > 8) {
+      if (data.length > 9) {
         setShowMore(true);
       } else {
         setShowMore(false);
@@ -119,6 +117,22 @@ const Search = () => {
 
     fetchListings();
   }, [location.search]);
+
+  const handleShowMore = async () => {
+    const startIndex = listings.length;
+    const urlParams = new URLSearchParams(location.search);
+    urlParams.set("startIndex", startIndex);
+    const searchQuery = urlParams.toString();
+    setShowMore(false);
+    const res = await fetch(`/api/listing/get?${searchQuery}`);
+    const data = await res.json();
+    if (data) {
+      setListings([...listings, ...data]);
+      {
+        data.length > 9 ? setShowMore(true) : setShowMore(false);
+      }
+    }
+  };
 
   return (
     <div className="flex flex-col md:flex-row">
@@ -249,16 +263,29 @@ const Search = () => {
         <h1 className="text-3xl font-semibold border-b border-gray-300 p-3 text-slate-700 mt-5 ">
           Listing results
         </h1>
-        <div className='p-7 flex flex-wrap gap-4'>
+        <div className="p-7 flex flex-wrap gap-4">
           {listings.length < 1 && !loading && (
             <p className="text-2xl text-slate-500 p-3">No Listing Found</p>
           )}
           {loading && <p className="text-center text-xl mt-3"> Loading... </p>}
-          {!loading && listings && (
-            listings.map((item)=>(
-              <ListingItem key={item._id} listing={item}/>
-            ))
-          ) }
+          {!loading &&
+            listings &&
+            listings.map((item) => (
+              <ListingItem key={item._id} listing={item} />
+            ))}
+        </div>
+        {/* //! show more button */}
+        <div className=" flex justify-center items-center py-4">
+          {showMore && (
+            <button
+              onClick={handleShowMore}
+              className="relative inline-flex items-center justify-center p-0.5 mb-2 me-2 overflow-hidden text-sm font-medium text-gray-900 rounded-lg group bg-gradient-to-br from-teal-300 to-lime-300 group-hover:from-teal-300 group-hover:to-lime-300 dark:text-white dark:hover:text-gray-900 focus:ring-4 focus:outline-none focus:ring-lime-200"
+            >
+              <span className="relative px-5 py-2.5 transition-all ease-in duration-75 bg-white text-black rounded-md group-hover:bg-transparent group-hover:dark:bg-transparent">
+                Show More
+              </span>
+            </button>
+          )}
         </div>
       </div>
     </div>

@@ -17,7 +17,7 @@ const userSchema = new  mongoose.Schema({
     },
     avatar : {
         type : String,
-        default : "https://ik.imagekit.io/prakhar3091/1748861389071cat-gcd5fe7b48_1280_B3fRbtthg.jpg?updatedAt=1748861390382"
+        default : "https://ik.imagekit.io/prakhar3091/ProfileImages/1753449856775_user_9684549_CEq_sGkzj.png"
     },
 } , {timestamps: true});
 
