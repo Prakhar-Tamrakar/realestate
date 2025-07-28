@@ -5,6 +5,7 @@ import ListingItem from "../components/ListingItem";
 const Search = () => {
   const [sideBarData, setSideBarData] = useState({
     searchTerm: "",
+    location:"",
     type: "all",
     parking: false,
     furnished: false,
@@ -29,10 +30,10 @@ const Search = () => {
       }));
     }
 
-    if (e.target.id == "searchTerm") {
+    if (e.target.id == "searchTerm" || e.target.id == "location") {
       setSideBarData((prev) => ({
         ...prev,
-        searchTerm: e.target.value,
+        [e.target.id]: e.target.value,
       }));
     }
 
@@ -60,6 +61,7 @@ const Search = () => {
     e.preventDefault();
     const urlParams = new URLSearchParams();
     urlParams.set("searchTerm", sideBarData.searchTerm);
+    urlParams.set("location", sideBarData.location);
     urlParams.set("type", sideBarData.type);
     urlParams.set("parking", sideBarData.parking);
     urlParams.set("furnished", sideBarData.furnished);
@@ -73,6 +75,7 @@ const Search = () => {
   useEffect(() => {
     const urlParams = new URLSearchParams(location.search);
     const searchTermFromUrl = urlParams.get("searchTerm");
+    const locationFromUrl = urlParams.get("location");
     const typeFromUrl = urlParams.get("type");
     const parkingFromUrl = urlParams.get("parking");
     const furnishedFromUrl = urlParams.get("furnished");
@@ -82,6 +85,7 @@ const Search = () => {
 
     if (
       searchTermFromUrl ||
+      locationFromUrl ||
       typeFromUrl ||
       parkingFromUrl ||
       furnishedFromUrl ||
@@ -91,6 +95,7 @@ const Search = () => {
     ) {
       setSideBarData({
         searchTerm: searchTermFromUrl || "",
+        location: locationFromUrl || "",
         type: typeFromUrl || "all",
         parking: parkingFromUrl === "true" ? true : false,
         furnished: furnishedFromUrl === "true" ? true : false,
@@ -153,6 +158,23 @@ const Search = () => {
               className="border border-gray-400 p-3 rounded-lg w-full bg-white "
             />
           </div>
+
+          <div className=" flex  gap-2 items-center">
+            <label className="whitespace-nowrap font-semibold">
+              {" "}
+              location
+            </label>
+            {/* //! location input field */}
+            <input
+              type="text"
+              id="location"
+              placeholder="Search by location... "
+              value={sideBarData.location}
+              onChange={handleOnChange}
+              className="border border-gray-400 p-3 rounded-lg w-full bg-white "
+            />
+          </div>
+
           <div className="flex items-center flex-wrap gap-2 ">
             <label className="font-semibold">Type:</label>
             <div className="flex items-center gap-2">
