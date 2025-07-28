@@ -334,35 +334,40 @@ export default function Profile() {
             {listings.map((listing) => (
               <li
                 key={listing._id}
-                className="flex justify-between gap-4 h-15 shadow-[0px_4px_6px_0px_rgba(0,_0,_0,_0.1)] p-2 my-2 rounded"
+                className="flex flex-col sm:flex-row justify-between gap-4 shadow-[0px_4px_6px_0px_rgba(0,_0,_0,_0.1)] p-4 my-4 rounded-lg"
               >
-                <div className="flex items-center gap-4">
+                {/* Left side: image + details */}
+                <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center">
                   <img
-                    className="rounded"
+                    className="rounded object-cover w-full sm:w-32 h-32 sm:h-24"
                     src={listing.imageUrls[0]}
-                    width={80}
-                    height={80}
-                    alt="no image"
+                    alt="listing"
                   />
                   <div>
                     <Link to={`/listing/${listing._id}`}>
-                    <h3 className="font-bold">Name: {listing.name}</h3>
+                      <h3 className="font-semibold text-lg hover:underline">
+                        Name: {listing.name}
+                      </h3>
                     </Link>
-                    <p className="text-gray-500">
+                    <p className="text-gray-600 text-sm mt-1">
                       Price: ${listing.regularPrice}
                     </p>
                   </div>
                 </div>
-                <div>
+
+                {/* Right side: actions */}
+                <div className="flex sm:flex-col sm:justify-center  items-center sm:items-end gap-2 text-sm sm:text-base">
                   <Link to={`/update-listing/${listing._id}`}>
-                  <button className="text-green-500 block">Edit</button>
+                    <button className="text-green-600 hover:underline">
+                      Edit
+                    </button>
                   </Link>
                   <button
                     onClick={() => {
                       setSelectedListingId(listing._id);
                       setShowDeleteListingConfirm(true);
                     }}
-                    className="text-red-600"
+                    className="text-red-600 hover:underline"
                   >
                     Delete
                   </button>

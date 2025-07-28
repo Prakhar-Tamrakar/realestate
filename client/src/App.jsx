@@ -10,6 +10,7 @@ import CreateListing from "./pages/CreateListing";
 import UpdateListing from "./pages/UpdateListing";
 import Listing from "./pages/Listing";
 import Search from "./pages/Search";
+import Contact from "./pages/Contact";
 
 function App() {
   return (
@@ -22,6 +23,7 @@ function App() {
         <Route path="/signup" element={<SignUp />} />
         <Route path="/listing/:id" element={<Listing />} />
         <Route path="/search" element={<Search/>}/>
+        <Route path="/contact" element={<Contact/>}/>
         
         {/* Private Routes */}
         <Route element={<PrivateRoute />}>
