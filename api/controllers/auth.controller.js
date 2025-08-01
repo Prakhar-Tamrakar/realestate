@@ -2,7 +2,6 @@ import User from "../models/user.model.js";
 import bcryptjs from "bcryptjs";
 import jwt from "jsonwebtoken";
 import { errorHandler } from "../utils/error.js";
-import { Resend } from "resend";
 
 import nodemailer from "nodemailer";
 import otpGenerator from "otp-generator";
@@ -86,32 +85,37 @@ export const signOut = (req, res) => {
   }
 };
 
-
-
 export const sendOtp = async (req, res) => {
   const { email } = req.body;
+  const validUser = await User.findOne({ email });
+
+  if (!validUser) {
+    return res.status(404).json({
+      success: false,
+      message: "User not found",
+    });
+  }
 
   const otp = otpGenerator.generate(6, {
-    upperCase: false,
+    digits: true,
+    lowerCaseAlphabets: false,
+    upperCaseAlphabets: false,
     specialChars: false,
   });
 
   try {
-    // Save OTP to DB
     await Otp.create({ email, otp });
 
-    // Create Gmail transporter
     const transporter = nodemailer.createTransport({
       service: "gmail",
       secure: true,
       port: 465,
       auth: {
         user: "ankittamrakar3091@gmail.com",
-        pass: "xcsi bypu dant kgpj", // 🔐 Use env in production!
+        pass: "xcsi bypu dant kgpj", // move to env in production
       },
     });
 
-    // Email options
     const mailOptions = {
       from: "ankittamrakar3091@gmail.com",
       to: email,
@@ -119,7 +123,6 @@ export const sendOtp = async (req, res) => {
       text: `Hi, your one time password is: ${otp}`,
     };
 
-    // Send the email
     transporter.sendMail(mailOptions, (error, info) => {
       if (error) {
         return res.status(500).json({
@@ -129,15 +132,12 @@ export const sendOtp = async (req, res) => {
         });
       }
 
-      res.status(200).json({
+      return res.status(200).json({
         success: true,
         message: "OTP sent successfully",
-        otp, // ❗Only for testing. Remove in production
         messageId: info.messageId,
-        sendTo : email
       });
     });
-
   } catch (error) {
     res.status(500).json({
       success: false,
@@ -146,3 +146,28 @@ export const sendOtp = async (req, res) => {
     });
   }
 };
+
+
+
+export const verifyOtp = async (req, res) => {
+  const { email, otp } = req.body;
+  const validUser = await User.findOne({ email });
+  const validOtp = await Otp.findOne({ email, otp });
+
+  if (!validUser || !validOtp) {
+    return res.status(401).json({
+      success: false,
+      message: "Invalid OTP or user not found",
+    });
+  }
+  await Otp.deleteMany({ email });
+
+  const token = jwt.sign({ id: validUser._id }, process.env.JWT_SECRET);
+  const { password, ...rest } = validUser._doc;
+
+  res
+    .cookie("access_token", token, { httpOnly: true })
+    .status(200)
+    .json({ success: true, ...rest });
+};
+

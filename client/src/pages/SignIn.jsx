@@ -5,6 +5,7 @@ import {
   signInStart,
   signInSuccess,
   signInFailure,
+  resetError,
 } from "../redux/user/userSlice";
 import OAuth from "../components/OAuth";
 
@@ -15,6 +16,7 @@ export default function SignIn() {
   });
   // const [error, setError] = useState(null);
   // const [isLoading, setIsLoading] = useState(false);
+  // const { isLoading, error } = useSelector((state) => state.user);
   const { isLoading, error } = useSelector((state) => state.user);
   
 
@@ -27,6 +29,7 @@ export default function SignIn() {
 
   const handleOnSubmit = async (e) => {
   e.preventDefault();
+  dispatch(resetError());
   try {
     dispatch(signInStart());
     const res = await fetch("/api/auth/signin", {
@@ -77,10 +80,22 @@ export default function SignIn() {
         >
           {isLoading ? "Loading" : "Sign in"}
         </button>
+
         <OAuth/>
+        <Link to="/login-with-otp">
+
+         <p
+          disabled={isLoading}
+          className="bg-green-700 text-center w-full text-white p-3 rounded-lg uppercase hover:opacity-95"
+        >
+          login with otp
+        </p>
+        </Link>
+
 
       </form>
       <div className="flex gap-2 mt-5">
+        
         <p>Don't have an account?</p>
         <Link to="/signup">
           <span className="text-blue-500">Sign up</span>

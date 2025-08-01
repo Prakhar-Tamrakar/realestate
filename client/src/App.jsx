@@ -11,6 +11,7 @@ import UpdateListing from "./pages/UpdateListing";
 import Listing from "./pages/Listing";
 import Search from "./pages/Search";
 import Contact from "./pages/Contact";
+import LoginWithOtp from "./pages/LoginWithOtp";
 
 function App() {
   return (
@@ -21,6 +22,9 @@ function App() {
         <Route path="/about" element={<About />} />
         <Route path="/signin" element={<SignIn />} />
         <Route path="/signup" element={<SignUp />} />
+        <Route path="/login-with-otp" element={<LoginWithOtp/>} />
+
+
         <Route path="/listing/:id" element={<Listing />} />
         <Route path="/search" element={<Search/>}/>
         <Route path="/contact" element={<Contact/>}/>
