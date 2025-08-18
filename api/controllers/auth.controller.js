@@ -3,7 +3,6 @@ import bcryptjs from "bcryptjs";
 import jwt from "jsonwebtoken";
 import { errorHandler } from "../utils/error.js";
 
-import nodemailer from "nodemailer";
 import otpGenerator from "otp-generator";
 import Otp from "../models/otp.model.js";
 
